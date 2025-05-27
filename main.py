@@ -1,4 +1,5 @@
 import pygame
+import random as r
 pygame.init()
 
 szerokosc = 1200
@@ -10,12 +11,27 @@ paletka_x = 25
 szerokosc_paletki = 20
 paletka_prawa_y = wysokosc/2-dlugosc_paletki/2
 paletka_lewa_y = wysokosc / 2 - dlugosc_paletki / 2
+rozmiar_pileczki = 20
+polozenie_pileczki_y = wysokosc / 2 - rozmiar_pileczki / 2
+polozenie_pileczki_x = szerokosc / 2 - rozmiar_pileczki / 2
 
 zegarek = pygame.time.Clock()
+
+pileczka_r = r.randint(1, 4)
+if pileczka_r == 1 :
+    polozenie_pileczki_x -= 8
+elif pileczka_r == 2 :
+    polozenie_pileczki_x += 8
+elif pileczka_r == 3 :
+    polozenie_pileczki_y -= 8
+elif pileczka_r == 4 :
+    polozenie_pileczki_y += 8
 
 while True:
     zegarek.tick(60)
     screen.fill('black')
+
+    #rysowanie obiektów na planszy
     linia = pygame.rect.Rect(szerokosc/2-grubosc_lini/2,0,grubosc_lini,wysokosc)
     pygame.draw.rect(screen,'white', linia)
     paletka_lewa = pygame.rect.Rect(
@@ -30,6 +46,14 @@ while True:
         20,
         dlugosc_paletki)
     pygame.draw.rect(screen,'white', paletka_prawa)
+    pileczka = pygame.rect.Rect(
+        polozenie_pileczki_x,
+        polozenie_pileczki_y,
+        rozmiar_pileczki,
+        rozmiar_pileczki)
+    pygame.draw.rect(screen, 'red', pileczka)
+
+    #obsługa eventów
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -53,6 +77,7 @@ while True:
         paletka_lewa_y += 8
         if paletka_lewa_y >= 550 - dlugosc_paletki:
             paletka_lewa_y = 550 - dlugosc_paletki
+
 
 
 
