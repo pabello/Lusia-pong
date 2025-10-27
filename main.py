@@ -6,6 +6,12 @@ pygame.init()
 
 ################================---------------- INICJALIZACJA STAŁYCH I ZMIENNYCH ----------------================################
 font = pygame.font.Font(size = 60)
+font2 = pygame.font.Font(size = 150)
+font3 = pygame.font.Font(size = 40)
+
+#utawienie trybu gry
+tryb_gry = "lobby"  # lobby, game, score, end
+wylacz_gre = False
 
 # Ustawiania wielkości okna
 SZEROKOSC = 1200
@@ -33,29 +39,14 @@ polozenie_pileczki_x = (SZEROKOSC / 2) - (ROZMIAR_PILECZKI / 2)  # Jak daleko od
 """
 Żeby można było wybrać poziom trudności klikając w ekranie lobby, musimy przenieść ten kod do nowej funkcji
 """
-level = int(input("Chose the level of difficulty from 1 to 4: "))
 
-HP_left = 6 - level
-HP_right = 6 - level
 
-predkosc_x = random.choice([-1,1])
-predkosc_y = random.randint(-1,1)
 
-if level == 1:  # Level easy
-    predkosc_x = predkosc_x * 4
-    predkosc_y = predkosc_y * 4
 
-if level == 2:  # Level medium
-    predkosc_x = predkosc_x * 5
-    predkosc_y = predkosc_y * 5
+predkosc_x = 1
+predkosc_y = 1
 
-if level == 3:  # Level hard
-    predkosc_x = predkosc_y * 6
-    predkosc_y = predkosc_y * 6
 
-if level == 4:  # Level hell
-    predkosc_x = predkosc_y * 10
-    predkosc_y = predkosc_y * 10
 """Aż dotąd"""
 
 # Ustawienia graczy
@@ -66,18 +57,180 @@ nazwa_gracza_prawo = "Player 2"
 points_left = 0
 points_right = 0
 
+szerokosc_przycisku = 200
+wyskosc_przycisku = 80
+odstepy_miedzy_przyciskami = 30
+odstep_przycisku_od_sciany = 155
+
+
 ################================---------------- EKRANY GRY ----------------================################
 
 # Ekran lobby
-def show_lobby (screen:pygame.Surface):
-    screen.fill('black')
+przycisk_game = pygame.rect.Rect(
+    SZEROKOSC - odstep_przycisku_od_sciany - szerokosc_przycisku,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
 
+przycisk_esc = pygame.rect.Rect(
+    SZEROKOSC - odstepy_miedzy_przyciskami - odstep_przycisku_od_sciany - szerokosc_przycisku * 2,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+przycisk_CDL = pygame.rect.Rect(
+    SZEROKOSC - odstepy_miedzy_przyciskami * 2 - odstep_przycisku_od_sciany - szerokosc_przycisku * 3,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+przycisk_CAN = pygame.rect.Rect(
+    odstep_przycisku_od_sciany,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+przycisk_one = pygame.rect.Rect(
+    odstep_przycisku_od_sciany,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+
+przycisk_two = pygame.rect.Rect(
+    SZEROKOSC - odstepy_miedzy_przyciskami * 2 - odstep_przycisku_od_sciany - szerokosc_przycisku * 3,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+przycisk_three = pygame.rect.Rect(
+    SZEROKOSC - odstepy_miedzy_przyciskami - odstep_przycisku_od_sciany - szerokosc_przycisku * 2,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+przycisk_four = pygame.rect.Rect(
+    SZEROKOSC - odstep_przycisku_od_sciany - szerokosc_przycisku,
+    300,
+    szerokosc_przycisku,
+    wyskosc_przycisku)
+
+def show_globby (screen:pygame.Surface):
+    global tryb_gry, wylacz_gre
+
+    screen.fill('black')
+    globby_word_render = font2.render("Lobby", True, 'white')
+    szerokosc_globby = globby_word_render.get_width()
+    screen.blit(globby_word_render, ((SZEROKOSC - szerokosc_globby) / 2,100), )
+    kolor_przyciskow = "white"
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_CAN)
+    can_word_render = font3.render("NAME", True, 'black')
+    szerokosc_CAN = can_word_render.get_width()
+    wysokosc_CAN = can_word_render.get_height()
+    screen.blit(can_word_render,(przycisk_CAN.centerx - szerokosc_CAN / 2, przycisk_game.centery - wysokosc_CAN / 2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_game)
+    game_word_render = font3.render("GAME", True, 'black')
+    szerokosc_game = game_word_render.get_width()
+    wysokosc_game = game_word_render.get_height()
+    screen.blit(game_word_render, (przycisk_game.centerx - szerokosc_game /2, przycisk_game.centery - wysokosc_game/2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_esc)
+    esc_word_render = font3.render("EXIT", True, 'black')
+    szerokosc_esc = esc_word_render.get_width()
+    wysokosc_esc = esc_word_render.get_height()
+    screen.blit(esc_word_render,(przycisk_esc.centerx - szerokosc_esc / 2, przycisk_esc.centery - wysokosc_esc / 2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_CDL)
+    cdl_word_render = font3.render("Difficulty".upper(), True, 'black')
+    cdl_rect = cdl_word_render.get_rect(center=przycisk_CDL.center)
+    screen.blit(cdl_word_render, cdl_rect, )
+
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        possition = pygame.mouse.get_pos()
+        if przycisk_game.collidepoint(possition):
+            tryb_gry = 'game'
+            print('ziemniak')
+
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        possition = pygame.mouse.get_pos()
+        if przycisk_esc.collidepoint(possition):
+            wylacz_gre = True
+            print('ziemniak')
+
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        possition = pygame.mouse.get_pos()
+        if przycisk_CDL.collidepoint(possition):
+           tryb_gry = "CDL"
+
+HP_left = 6
+HP_right = 6
+def choose_difficulti_level(screen):
+    global predkosc_y,predkosc_x,HP_left,HP_right,tryb_gry
+
+    screen.fill('black')
+    cdl_word_render = font2.render("Choose difficulty level", True, 'white')
+    szerokosc_cdl = cdl_word_render.get_width()
+    screen.blit(cdl_word_render, ((SZEROKOSC - szerokosc_cdl) / 2, 100), )
+    kolor_przyciskow = "white"
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_one)
+    one_word_render = font3.render("Easy", True, 'black')
+    szerokosc_one = one_word_render.get_width()
+    wysokosc_one = one_word_render.get_height()
+    screen.blit(one_word_render, (przycisk_one.centerx - szerokosc_one / 2, przycisk_one.centery - wysokosc_one / 2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_two)
+    two_word_render = font3.render("Medium", True, 'black')
+    szerokosc_two = two_word_render.get_width()
+    wysokosc_two = two_word_render.get_height()
+    screen.blit(two_word_render, (przycisk_two.centerx - szerokosc_two / 2, przycisk_two.centery - wysokosc_two / 2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_three)
+    three_word_render = font3.render("Hard", True, 'black')
+    szerokosc_three = three_word_render.get_width()
+    wysokosc_three = three_word_render.get_height()
+    screen.blit(three_word_render, (przycisk_three.centerx - szerokosc_three / 2, przycisk_three.centery - wysokosc_three / 2), )
+
+    pygame.draw.rect(screen, kolor_przyciskow, przycisk_four)
+    four_word_render = font3.render("HELL", True, 'black')
+    szerokosc_four = four_word_render.get_width()
+    wysokosc_four = four_word_render.get_height()
+    screen.blit(four_word_render, (przycisk_four.centerx - szerokosc_four / 2, przycisk_four.centery - wysokosc_four / 2), )
+    # inicjowanie leveli
+    predkosc_baza_x = random.choice([-1, 1])
+    predkosc_baza_y = random.randint(-1, 1)
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        possition = pygame.mouse.get_pos()
+
+        if przycisk_one.collidepoint(possition):
+            predkosc_x = predkosc_baza_x * 4
+            predkosc_y = predkosc_baza_y * 4
+            tryb_gry = 'lobby'
+
+        elif przycisk_two.collidepoint(possition):
+            predkosc_x = predkosc_baza_x * 5
+            predkosc_y = predkosc_baza_y * 5
+            tryb_gry = 'lobby'
+
+        elif przycisk_three.collidepoint(possition):
+            predkosc_x = predkosc_baza_x * 6
+            predkosc_y = predkosc_baza_y * 6
+            tryb_gry = 'lobby'
+
+        elif przycisk_four.collidepoint(possition):
+            predkosc_x = predkosc_baza_x * 10
+            predkosc_y = predkosc_baza_y * 10
+            tryb_gry = 'lobby'
 
 # Ekran widoku gry
-def game():
-    """
-    Tutaj zamiast komentarza, trzeba dodać wczytanie zmiennych globalnychs
-    """
+def game(screen):
+    global paletka_lewa_y, paletka_prawa_y
+    global polozenie_pileczki_x, polozenie_pileczki_y
+    global points_left, points_right, HP_left, HP_right
+    global predkosc_x, predkosc_y
+
 
     pygame.draw.rect(screen, 'white', linia)
 
@@ -172,8 +325,8 @@ def game():
 ################================---------------- GŁÓWNA PĘTLA GRY ----------------================################
 ##################################################################################################################
 
-wylacz_gre = False
-tryb_gry = "game"  # lobby, game, score, end
+
+
 zegarek = pygame.time.Clock()
 while wylacz_gre == False:
     zegarek.tick(60)
@@ -183,9 +336,17 @@ while wylacz_gre == False:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             wylacz_gre = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                tryb_gry = "lobby"
 
     if tryb_gry == "game":
-        game()
+        game(screen)
+    elif tryb_gry == 'lobby':
+        show_globby(screen)
+    elif tryb_gry == 'CDL':
+        choose_difficulti_level(screen)
+
 
     pygame.display.update()
 
