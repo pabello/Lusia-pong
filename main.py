@@ -9,8 +9,12 @@ font = pygame.font.Font(size = 60)
 font2 = pygame.font.Font(size = 150)
 font3 = pygame.font.Font(size = 40)
 
-#utawienie trybu gry
-tryb_gry = "lobby"  # lobby, game, score, end
+# Lista eventów wywołanych w obecnym przejściu pętli
+# (żeby móc je wykorzystać w różnych miejscach w kodzie)
+current_events = []
+
+# Ustawienie trybu gry
+tryb_gry = "lobby"  # lobby, names, game, score, end
 wylacz_gre = False
 
 # Ustawiania wielkości okna
@@ -36,18 +40,8 @@ polozenie_pileczki_x = (SZEROKOSC / 2) - (ROZMIAR_PILECZKI / 2)  # Jak daleko od
 
 
 # Ustawienia poziomu trudności (szybkość piłeczki i ilość HP)
-"""
-Żeby można było wybrać poziom trudności klikając w ekranie lobby, musimy przenieść ten kod do nowej funkcji
-"""
-
-
-
-
 predkosc_x = 1
 predkosc_y = 1
-
-
-"""Aż dotąd"""
 
 # Ustawienia graczy
 nazwa_gracza_lewo = "Player 1"
@@ -65,7 +59,7 @@ odstep_przycisku_od_sciany = 155
 
 ################================---------------- EKRANY GRY ----------------================################
 
-# Ekran lobby
+#####=====----- Ekran lobby -----=====#####
 przycisk_game = pygame.rect.Rect(
     SZEROKOSC - odstep_przycisku_od_sciany - szerokosc_przycisku,
     300,
@@ -147,23 +141,104 @@ def show_globby (screen:pygame.Surface):
     cdl_rect = cdl_word_render.get_rect(center=przycisk_CDL.center)
     screen.blit(cdl_word_render, cdl_rect, )
 
-    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-        possition = pygame.mouse.get_pos()
-        if przycisk_game.collidepoint(possition):
-            tryb_gry = 'game'
-            print('ziemniak')
+    for event in current_events:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            possition = pygame.mouse.get_pos()
+            if przycisk_game.collidepoint(possition):
+                tryb_gry = 'game'
 
-    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-        possition = pygame.mouse.get_pos()
-        if przycisk_esc.collidepoint(possition):
-            wylacz_gre = True
-            print('ziemniak')
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            possition = pygame.mouse.get_pos()
+            if przycisk_esc.collidepoint(possition):
+                wylacz_gre = True
 
-    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-        possition = pygame.mouse.get_pos()
-        if przycisk_CDL.collidepoint(possition):
-           tryb_gry = "CDL"
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            possition = pygame.mouse.get_pos()
+            if przycisk_CDL.collidepoint(possition):
+                tryb_gry = "CDL"
 
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            possition = pygame.mouse.get_pos()
+            if przycisk_CAN.collidepoint(possition):
+                tryb_gry = "names"
+
+#####=====----- Ekran nazw graczy -----=====#####
+cursor_event_set = False
+cursor_event = pygame.event.Event(12345, {"name": "CURSOR_TICK"})
+show_cursor = True
+
+player1_done = False
+player2_done = False
+
+player1_name = ""
+player2_name = ""
+
+player1_header = font.render("Player 1", True, 'white')
+player2_header = font.render("Player 2", True, 'white')
+header_width = player1_header.get_width()
+
+cursor_gap_above_line = 1
+cursor_width = 2
+cursor_height = font3.get_height()-cursor_gap_above_line
+
+def set_names_view(screen):
+    global tryb_gry
+    global show_cursor, cursor_event_set
+    global player1_done, player2_done
+    global player1_name, player2_name
+    
+    if not cursor_event_set:
+        pygame.time.set_timer(cursor_event, 700)
+        cursor_event_set = True
+    
+    screen.blit(player1_header, (SZEROKOSC / 3 - header_width, 100), )
+    screen.blit(player2_header, (SZEROKOSC / 3 * 2, 100), )
+    
+    player1_bar = pygame.draw.line(screen, "white", (SZEROKOSC / 3 - header_width - 30, 250), (SZEROKOSC / 3 + 30, 250))
+    player2_bar = pygame.draw.line(screen, "white", (SZEROKOSC / 3 * 2 - 30, 250), (SZEROKOSC / 3 * 2 + header_width + 30, 250))
+    
+    player1_name_render = font3.render(player1_name, True, "white")
+    player2_name_render = font3.render(player2_name, True, "white")
+    
+    cursor_top = player1_bar.top-font3.get_height()-cursor_gap_above_line
+    
+    screen.blit(player1_name_render, (player1_bar.left, cursor_top))
+    screen.blit(player2_name_render, (player2_bar.left, cursor_top))
+
+    if not player1_done:
+        cursor = pygame.Rect(player1_bar.left + player1_name_render.get_width(), cursor_top, cursor_width, cursor_height)
+    elif not player2_done:
+        cursor = pygame.Rect(player2_bar.left + player2_name_render.get_width(), cursor_top, cursor_width, cursor_height)
+    else:
+        cursor = None
+    
+    for event in current_events:
+        if event.type == cursor_event.type:
+            show_cursor = not show_cursor
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                if not player1_done:
+                    player1_done = True
+                elif not player2_done:
+                    player2_done = True
+                else:
+                    tryb_gry = "lobby"
+            else:
+                if not player1_done:
+                    player1_name += event.unicode
+                elif not player2_done:
+                    player2_name += event.unicode
+
+    if cursor and show_cursor:
+        pygame.draw.rect(screen, "white", cursor)
+        
+    if player1_done and player2_done:
+        pygame.time.set_timer(cursor_event, 0)  # Turn off the timer; stop adding events
+
+    return
+
+
+#####=====----- Ekran difficulty -----=====#####
 HP_left = 6
 HP_right = 6
 def choose_difficulti_level(screen):
@@ -198,39 +273,39 @@ def choose_difficulti_level(screen):
     szerokosc_four = four_word_render.get_width()
     wysokosc_four = four_word_render.get_height()
     screen.blit(four_word_render, (przycisk_four.centerx - szerokosc_four / 2, przycisk_four.centery - wysokosc_four / 2), )
+    
     # inicjowanie leveli
     predkosc_baza_x = random.choice([-1, 1])
     predkosc_baza_y = random.randint(-1, 1)
-    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-        possition = pygame.mouse.get_pos()
+    
+    for event in current_events:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            possition = pygame.mouse.get_pos()
 
-        if przycisk_one.collidepoint(possition):
-            predkosc_x = predkosc_baza_x * 4
-            predkosc_y = predkosc_baza_y * 4
+            if przycisk_one.collidepoint(possition):
+                predkosc_x = predkosc_baza_x * 4
+                predkosc_y = predkosc_baza_y * 4
+
+            elif przycisk_two.collidepoint(possition):
+                predkosc_x = predkosc_baza_x * 5
+                predkosc_y = predkosc_baza_y * 5
+
+            elif przycisk_three.collidepoint(possition):
+                predkosc_x = predkosc_baza_x * 6
+                predkosc_y = predkosc_baza_y * 6
+
+            elif przycisk_four.collidepoint(possition):
+                predkosc_x = predkosc_baza_x * 10
+                predkosc_y = predkosc_baza_y * 10
+                
             tryb_gry = 'lobby'
 
-        elif przycisk_two.collidepoint(possition):
-            predkosc_x = predkosc_baza_x * 5
-            predkosc_y = predkosc_baza_y * 5
-            tryb_gry = 'lobby'
-
-        elif przycisk_three.collidepoint(possition):
-            predkosc_x = predkosc_baza_x * 6
-            predkosc_y = predkosc_baza_y * 6
-            tryb_gry = 'lobby'
-
-        elif przycisk_four.collidepoint(possition):
-            predkosc_x = predkosc_baza_x * 10
-            predkosc_y = predkosc_baza_y * 10
-            tryb_gry = 'lobby'
-
-# Ekran widoku gry
+#####=====----- Ekran widoku gry -----=====#####
 def game(screen):
     global paletka_lewa_y, paletka_prawa_y
     global polozenie_pileczki_x, polozenie_pileczki_y
     global points_left, points_right, HP_left, HP_right
     global predkosc_x, predkosc_y
-
 
     pygame.draw.rect(screen, 'white', linia)
 
@@ -333,7 +408,8 @@ while wylacz_gre == False:
     screen.fill('black')
 
     # Obsługa eventów
-    for event in pygame.event.get():
+    current_events = list(pygame.event.get())
+    for event in current_events:
         if event.type == pygame.QUIT:
             wylacz_gre = True
         if event.type == pygame.KEYDOWN:
@@ -344,6 +420,8 @@ while wylacz_gre == False:
         game(screen)
     elif tryb_gry == 'lobby':
         show_globby(screen)
+    elif tryb_gry == 'names':
+        set_names_view(screen)
     elif tryb_gry == 'CDL':
         choose_difficulti_level(screen)
 
