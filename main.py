@@ -146,20 +146,11 @@ def show_globby (screen:pygame.Surface):
             possition = pygame.mouse.get_pos()
             if przycisk_game.collidepoint(possition):
                 tryb_gry = 'game'
-
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            possition = pygame.mouse.get_pos()
-            if przycisk_esc.collidepoint(possition):
+            elif przycisk_esc.collidepoint(possition):
                 wylacz_gre = True
-
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            possition = pygame.mouse.get_pos()
-            if przycisk_CDL.collidepoint(possition):
+            elif przycisk_CDL.collidepoint(possition):
                 tryb_gry = "CDL"
-
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            possition = pygame.mouse.get_pos()
-            if przycisk_CAN.collidepoint(possition):
+            elif przycisk_CAN.collidepoint(possition):
                 tryb_gry = "names"
 
 #####=====----- Ekran nazw graczy -----=====#####
